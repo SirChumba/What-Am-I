@@ -1,0 +1,16 @@
+Copyright (c) 2025 Gabriel Valdez (GitHub: SirChumba)
+
+All rights reserved.
+
+This software ("What Am I") and its associated files are the exclusive intellectual property of Gabriel Valdez.
+
+You are not permitted to copy, distribute, modify, sublicense, or use any part of this software or its assets (including code, images, sounds, or prompts) for any purpose, commercial or non-commercial, without explicit written permission from the author.
+
+Unauthorized use, reproduction, or redistribution of this software is strictly prohibited and may be subject to legal action.
+
+---
+
+Disclaimer:
+This game, "What Am I", is an original project independently created by Gabriel Valdez. It is inspired by classic guessing games such as charades and 20 Questions, but it is not affiliated with, endorsed by, or a reproduction of the game Headbanz® or any other commercial product.
+
+All prompts, code, and design are original and developed for educational and entertainment purposes.
