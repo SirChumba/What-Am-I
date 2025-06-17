@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>What Am I?</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #121212;
+        color: white;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .screen {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+      }
+      .active {
+        display: flex !important;
+      }
+      .btn {
+        background: #00b894;
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        margin: 0.5rem;
+        font-size: 1.2rem;
+        border-radius: 8px;
+        cursor: pointer;
+        min-width: 200px;
+        flex-shrink: 0;
+      }
+      .btn:hover {
+        background: #019270;
+      }
+      h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+      h2 {
+        margin-bottom: 1rem;
+      }
+      #bufferTimer {
+        font-size: 8rem;
+        margin-bottom: 1rem;
+      }
+      #wordTextTimeTrial,
+      #wordTextGroupPlay {
+        font-size: 4rem;
+        margin: 1rem;
+        text-align: center;
+      }
+      #gameTimer {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+      }
+      /* Scrollable menus */
+      #categoryButtons,
+      #difficultyButtons {
+        max-height: 300px;
+        overflow-y: auto;
+        width: 220px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding-right: 0.5rem;
+        box-sizing: content-box;
+      }
+      /* Scrollbar styling */
+      #categoryButtons::-webkit-scrollbar,
+      #difficultyButtons::-webkit-scrollbar {
+        width: 8px;
+      }
+      #categoryButtons::-webkit-scrollbar-thumb,
+      #difficultyButtons::-webkit-scrollbar-thumb {
+        background-color: #00b894;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Start Menu -->
+    <div id="startMenu" class="screen active">
+      <h1>What Am I?</h1>
+      <button class="btn" id="timeTrialBtn">Time Trial</button>
+      <button class="btn" id="groupPlayBtn">Group Play</button>
+    </div>
+
+    <!-- Category Menu -->
+    <div id="categoryMenu" class="screen">
+      <h2>Select Category</h2>
+      <div id="categoryButtons"></div>
+    </div>
+
+    <!-- Difficulty Menu -->
+    <div id="difficultyMenu" class="screen">
+      <h2>Select Difficulty</h2>
+      <div id="difficultyButtons">
+        <button class="btn difficultyBtn" data-difficulty="easy">Easy</button>
+        <button class="btn difficultyBtn" data-difficulty="medium">
+          Medium
+        </button>
+        <button class="btn difficultyBtn" data-difficulty="hard">Hard</button>
+      </div>
+    </div>
+
+    <!-- Buffer Screen -->
+    <div id="bufferScreen" class="screen">
+      <div>Get ready!</div>
+      <div id="bufferTimer">3</div>
+    </div>
+
+    <!-- Word Screen for Time Trial -->
+    <div id="wordScreenTimeTrial" class="screen">
+      <div id="wordTextTimeTrial">Word</div>
+      <div id="gameTimer">15</div>
+      <button class="btn" id="nextWordBtnTimeTrial">Next Word</button>
+      <button class="btn" id="playAgainBtnTimeTrial">Play Again</button>
+    </div>
+
+    <!-- Word Screen for Group Play -->
+    <div id="wordScreenGroupPlay" class="screen">
+      <div id="wordTextGroupPlay">Word</div>
+      <button class="btn" id="nextWordBtnGroupPlay">Next Word</button>
+      <button class="btn" id="playAgainBtnGroupPlay">Play Again</button>
+    </div>
+
+    <!-- Audio -->
+    <audio id="timerSound" src="timer.mp3" loop></audio>
+    <audio id="warningSound" src="warning.mp3"></audio>
+    <audio id="buzzerSound" src="buzzer.mp3"></audio>
+    <audio id="startSound" src="start.mp3"></audio>
+
+    <script>
+      // Screens
+      const screens = {
+        start: document.getElementById("startMenu"),
+        category: document.getElementById("categoryMenu"),
+        difficulty: document.getElementById("difficultyMenu"),
+        buffer: document.getElementById("bufferScreen"),
+        wordTimeTrial: document.getElementById("wordScreenTimeTrial"),
+        wordGroupPlay: document.getElementById("wordScreenGroupPlay"),
+      };
+
+      // Categories and words
+      const categories = {
+        animals: {
+          easy: [
+            "Dog",
+            "Cat",
+            "Fish",
+            "Bird",
+            "Horse",
+            "Rabbit",
+            "Cow",
+            "Pig",
+            "Duck",
+            "Frog",
+            "Sheep",
+            "Goat",
+            "Mouse",
+            "Owl",
+            "Bee",
+            "Crab",
+            "Deer",
+            "Fox",
+            "Turtle",
+            "Wolf",
+            "Elephant",
+            "Lion",
+            "Tiger",
+            "Zebra",
+            "Snake",
+            "Monkey",
+            "Giraffe",
+            "Chicken",
+            "Hamster",
+            "Squirrel",
+          ],
+          medium: [
+            "Panda",
+            "Otter",
+            "Koala",
+            "Peacock",
+            "Seahorse",
+            "Octopus",
+            "Parrot",
+            "Falcon",
+            "Wombat",
+            "Skunk",
+            "Raccoon",
+            "Badger",
+            "Moose",
+            "Leopard",
+            "Hyena",
+            "Vulture",
+            "Komodo Dragon",
+            "Hedgehog",
+            "Chameleon",
+            "Orangutan",
+            "Sloth",
+            "Kangaroo",
+            "Emu",
+            "Beaver",
+            "Gazelle",
+            "Meerkat",
+            "Bison",
+            "Flamingo",
+            "Pelican",
+            "Whale",
+          ],
+          hard: [
+            "Axolotl",
+            "Chinchilla",
+            "Tarsier",
+            "Aye-Aye",
+            "Narwhal",
+            "Okapi",
+            "Fossa",
+            "Quokka",
+            "Capybara",
+            "Kakapo",
+            "Numbat",
+            "Markhor",
+            "Saola",
+            "Maned Wolf",
+            "Dhole",
+            "Takin",
+            "Pangolin",
+            "Caracal",
+            "Solenodon",
+            "Harpy Eagle",
+            "Thorny Devil",
+            "Tapir",
+            "Civet",
+            "Sifaka",
+            "Babirusa",
+          ],
+        },
+        foods: {
+          easy: [
+            "Pizza",
+            "Burger",
+            "Rice",
+            "Pasta",
+            "Fries",
+            "Hotdog",
+            "Ice Cream",
+            "Taco",
+            "Sushi",
+            "Chicken",
+            "Cheese",
+            "Bread",
+            "Eggs",
+            "Steak",
+            "Milk",
+            "Cereal",
+            "Cookies",
+            "Cake",
+            "Donut",
+            "Salad",
+            "Soup",
+            "Sandwich",
+            "Apple",
+            "Banana",
+            "Orange",
+            "Popcorn",
+            "Chocolate",
+            "Waffles",
+            "Pancakes",
+            "Yogurt",
+          ],
+          medium: [
+            "Ramen",
+            "Burrito",
+            "Lasagna",
+            "Curry",
+            "Pho",
+            "Risotto",
+            "Quiche",
+            "Moussaka",
+            "Pad Thai",
+            "Tempura",
+            "Dim Sum",
+            "Croissant",
+            "Gyoza",
+            "Tteokbokki",
+            "Kimchi",
+            "Fajitas",
+            "Pierogi",
+            "Crepe",
+            "Bibimbap",
+            "Churros",
+            "Gumbo",
+            "Falafel",
+            "Hummus",
+            "Bruschetta",
+            "Empanada",
+            "Tamale",
+            "Baklava",
+            "Shawarma",
+            "Ceviche",
+            "Arepas",
+          ],
+          hard: [
+            "Okonomiyaki",
+            "Bouillabaisse",
+            "Katsudon",
+            "Chawanmushi",
+            "Pavlova",
+            "Vindaloo",
+            "Sauerbraten",
+            "Mille-feuille",
+            "Cassoulet",
+            "Raclette",
+            "Durian",
+            "Hákarl",
+            "Kaya Toast",
+            "Khoresht",
+            "Eton Mess",
+            "Tamagoyaki",
+            "Fugu",
+            "Sarma",
+            "Mochi",
+            "Onigiri",
+            "Ajvar",
+            "Khachapuri",
+            "Menudo",
+            "Poffertjes",
+            "Shakshuka",
+          ],
+        },
+        countries: {
+          easy: [
+            "USA",
+            "Canada",
+            "Japan",
+            "UK",
+            "France",
+            "Germany",
+            "Italy",
+            "Mexico",
+            "Brazil",
+            "India",
+            "China",
+            "Russia",
+            "Spain",
+            "Australia",
+            "South Korea",
+            "Argentina",
+            "South Africa",
+            "Egypt",
+            "Thailand",
+            "Turkey",
+            "Philippines",
+            "Indonesia",
+            "Netherlands",
+            "Greece",
+            "Vietnam",
+            "Portugal",
+            "Poland",
+            "Sweden",
+            "Switzerland",
+            "Norway",
+          ],
+          medium: [
+            "New Zealand",
+            "Czech Republic",
+            "Ireland",
+            "Colombia",
+            "Malaysia",
+            "Belgium",
+            "Denmark",
+            "Finland",
+            "Austria",
+            "Hungary",
+            "Peru",
+            "Saudi Arabia",
+            "Pakistan",
+            "Ukraine",
+            "Morocco",
+            "Chile",
+            "Romania",
+            "Kenya",
+            "Israel",
+            "Singapore",
+            "Qatar",
+            "UAE",
+            "Iceland",
+            "Slovakia",
+            "Croatia",
+            "Bangladesh",
+            "Ecuador",
+            "Algeria",
+            "Kazakhstan",
+            "Serbia",
+          ],
+          hard: [
+            "Kyrgyzstan",
+            "Liechtenstein",
+            "Djibouti",
+            "Eswatini",
+            "Comoros",
+            "Brunei",
+            "Vanuatu",
+            "Tuvalu",
+            "Palau",
+            "Bhutan",
+            "Andorra",
+            "San Marino",
+            "Tajikistan",
+            "Malta",
+            "Lesotho",
+            "Suriname",
+            "Micronesia",
+            "Nauru",
+            "Timor-Leste",
+            "Barbados",
+            "Seychelles",
+            "Bahrain",
+            "Mauritius",
+            "Monaco",
+            "Belize",
+          ],
+        },
+        movies: {
+          easy: [
+            "Titanic",
+            "Frozen",
+            "Avatar",
+            "Shrek",
+            "Toy Story",
+            "Finding Nemo",
+            "The Lion King",
+            "Aladdin",
+            "The Incredibles",
+            "Monsters Inc",
+            "The Avengers",
+            "Spider-Man",
+            "Iron Man",
+            "Harry Potter",
+            "Home Alone",
+            "Jumanji",
+            "Jurassic Park",
+            "Up",
+            "Minions",
+            "Despicable Me",
+            "Coco",
+            "Moana",
+            "Cars",
+            "Zootopia",
+            "Encanto",
+            "Twilight",
+            "Hunger Games",
+            "Transformers",
+            "Batman Begins",
+            "Black Panther",
+          ],
+          medium: [
+            "Inception",
+            "Parasite",
+            "Interstellar",
+            "The Matrix",
+            "The Dark Knight",
+            "Get Out",
+            "Whiplash",
+            "The Prestige",
+            "Bird Box",
+            "Knives Out",
+            "Looper",
+            "The Revenant",
+            "Ex Machina",
+            "Dune",
+            "Arrival",
+            "1917",
+            "Tenet",
+            "The Grand Budapest Hotel",
+            "Her",
+            "Drive",
+            "The Social Network",
+            "La La Land",
+            "The Menu",
+            "A Quiet Place",
+            "Everything Everywhere All At Once",
+            "Barbie",
+            "Oppenheimer",
+            "Oldboy",
+            "Midnight in Paris",
+            "Us",
+          ],
+          hard: [
+            "Synecdoche, New York",
+            "Amélie",
+            "Rashomon",
+            "Persona",
+            "Stalker",
+            "The Seventh Seal",
+            "Ikiru",
+            "Aguirre: The Wrath of God",
+            "Yojimbo",
+            "Cache",
+            "The Mirror",
+            "The Holy Mountain",
+            "The Handmaiden",
+            "Memories of Murder",
+            "Wings of Desire",
+            "The Piano Teacher",
+            "La Haine",
+            "Tampopo",
+            "Ran",
+            "Solaris",
+            "Blue Velvet",
+            "Come and See",
+            "The Lobster",
+            "Enter the Void",
+            "Tokyo Story",
+          ],
+        },
+        famousPeople: {
+          easy: [
+            "Elon Musk",
+            "Taylor Swift",
+            "Oprah",
+            "Barack Obama",
+            "Beyoncé",
+            "Justin Bieber",
+            "Tom Holland",
+            "Emma Watson",
+            "Drake",
+            "Selena Gomez",
+            "Rihanna",
+            "LeBron James",
+            "The Rock",
+            "Ariana Grande",
+            "Lady Gaga",
+            "Bill Gates",
+            "Mark Zuckerberg",
+            "Kanye West",
+            "Zendaya",
+            "Dwayne Johnson",
+            "Ed Sheeran",
+            "Nicki Minaj",
+            "Chris Evans",
+            "Tom Cruise",
+            "Jennifer Lawrence",
+            "Will Smith",
+            "Kim Kardashian",
+            "Shakira",
+            "Post Malone",
+            "Doja Cat",
+          ],
+          medium: [
+            "Frida Kahlo",
+            "Einstein",
+            "Malala",
+            "Marie Curie",
+            "Nelson Mandela",
+            "Stephen Hawking",
+            "Kobe Bryant",
+            "Steve Jobs",
+            "Leonardo DiCaprio",
+            "Gal Gadot",
+            "El Greco",
+            "Hideo Kojima",
+            "Banksy",
+            "Timothée Chalamet",
+            "Greta Thunberg",
+            "Simone Biles",
+            "Michelle Obama",
+            "Hayao Miyazaki",
+            "Stephen King",
+            "Jane Goodall",
+            "Jacinda Ardern",
+            "Serena Williams",
+            "Emma Stone",
+            "Cillian Murphy",
+            "Florence Pugh",
+            "Anthony Bourdain",
+            "Jon Stewart",
+            "Noam Chomsky",
+            "Taika Waititi",
+            "Quentin Tarantino",
+          ],
+          hard: [
+            "Hypatia",
+            "Alan Turing",
+            "Yayoi Kusama",
+            "Ada Lovelace",
+            "Carl Jung",
+            "Niels Bohr",
+            "Margaret Hamilton",
+            "Grigori Perelman",
+            "Gertrude Stein",
+            "Zaha Hadid",
+            "Jean-Michel Basquiat",
+            "Noor Inayat Khan",
+            "Haruki Murakami",
+            "Satoshi Tajiri",
+            "Chien-Shiung Wu",
+            "David Lynch",
+            "Rachel Carson",
+            "Isambard Kingdom Brunel",
+            "Marina Abramović",
+            "Otto Dix",
+            "Rosalind Franklin",
+            "László Moholy-Nagy",
+            "Eiko Ishioka",
+            "Claude Cahun",
+            "Satyajit Ray",
+          ],
+        },
+        tvshows: {
+          easy: [
+            "Friends",
+            "SpongeBob",
+            "The Office",
+            "Stranger Things",
+            "Breaking Bad",
+            "The Simpsons",
+            "Game of Thrones",
+            "Brooklyn Nine-Nine",
+            "The Big Bang Theory",
+            "Grey’s Anatomy",
+            "How I Met Your Mother",
+            "Rick and Morty",
+            "Modern Family",
+            "Family Guy",
+            "Naruto",
+            "Dragon Ball Z",
+            "Avatar: The Last Airbender",
+            "One Piece",
+            "The Walking Dead",
+            "Glee",
+            "The Flash",
+            "Arrow",
+            "iCarly",
+            "Victorious",
+            "The Mandalorian",
+            "WandaVision",
+            "Hannah Montana",
+            "Full House",
+            "Phineas and Ferb",
+            "Adventure Time",
+          ],
+          medium: [
+            "Better Call Saul",
+            "The Crown",
+            "The Witcher",
+            "Peaky Blinders",
+            "Ozark",
+            "BoJack Horseman",
+            "The Boys",
+            "Love, Death & Robots",
+            "The Good Place",
+            "Black Mirror",
+            "You",
+            "Succession",
+            "Fargo",
+            "Ted Lasso",
+            "Cobra Kai",
+            "Loki",
+            "Wednesday",
+            "Mindhunter",
+            "Parks and Recreation",
+            "Bates Motel",
+            "Daredevil",
+            "Jessica Jones",
+            "House of Cards",
+            "Sex Education",
+            "The Umbrella Academy",
+            "True Detective",
+            "Reacher",
+            "The Bear",
+            "Invincible",
+            "Berserk",
+          ],
+          hard: [
+            "Dark",
+            "Twin Peaks",
+            "Chernobyl",
+            "The Leftovers",
+            "The OA",
+            "Patriot",
+            "Mr. Robot",
+            "The Expanse",
+            "Legion",
+            "Penny Dreadful",
+            "Counterpart",
+            "The Knick",
+            "The Americans",
+            "Banshee",
+            "The Bridge",
+            "Halt and Catch Fire",
+            "Babylon Berlin",
+            "Rectify",
+            "Utopia",
+            "Undone",
+            "Taboo",
+            "Deutschland 83",
+            "The Prisoner",
+            "The Kingdom",
+            "Black Books",
+          ],
+        },
+        fictionalCharacters: {
+          easy: [
+            "Spider-Man",
+            "Batman",
+            "Harry Potter",
+            "Iron Man",
+            "Wonder Woman",
+            "Superman",
+            "Hulk",
+            "Goku",
+            "Naruto",
+            "SpongeBob",
+            "Elsa",
+            "Anna",
+            "Mickey Mouse",
+            "Minions",
+            "Sherlock Holmes",
+            "Mario",
+            "Luigi",
+            "Pikachu",
+            "Ash Ketchum",
+            "Yoda",
+            "Buzz Lightyear",
+            "Woody",
+            "Jack Sparrow",
+            "Homer Simpson",
+            "Donkey Kong",
+            "Luffy",
+            "Deku",
+            "Kakashi",
+            "Toothless",
+            "Baymax",
+          ],
+          medium: [
+            "Frodo",
+            "Aang",
+            "Naruto",
+            "Katara",
+            "Zuko",
+            "Thanos",
+            "Darth Vader",
+            "Kylo Ren",
+            "Loki",
+            "Geralt of Rivia",
+            "Joel (The Last of Us)",
+            "Ellie",
+            "Cloud Strife",
+            "Sephiroth",
+            "Light Yagami",
+            "L",
+            "Kenshin",
+            "Edward Elric",
+            "Alphonse",
+            "Saitama",
+            "Todoroki",
+            "Killua",
+            "Gon",
+            "Sasuke",
+            "Hinata",
+            "Tanjiro",
+            "Nezuko",
+            "Inuyasha",
+            "Gintoki",
+            "Revy",
+          ],
+          hard: [
+            "Homura Akemi",
+            "Howl",
+            "Makunouchi Ippo",
+            "Ginko",
+            "Motoko Kusanagi",
+            "Shinji Ikari",
+            "Nanami Kento",
+            "Kino",
+            "Kino (Kino's Journey)",
+            "Shouko Nishimiya",
+            "Okabe Rintarou",
+            "Nausicaä",
+            "Chihiro",
+            "Tomoko Kuroki",
+            "Lain Iwakura",
+            "Togame",
+            "Kuwabara",
+            "Simon (TTGL)",
+            "Madoka Kaname",
+            "Rika Furude",
+            "Saber",
+            "Kino Makoto",
+            "Yuki Nagato",
+            "Senjougahara",
+            "Rin Tohsaka",
+          ],
+        },
+        videoGames: {
+          easy: [
+            "Mario",
+            "Pikachu",
+            "Sonic",
+            "Link",
+            "Minecraft",
+            "Fortnite",
+            "Pac-Man",
+            "Tetris",
+            "Crash Bandicoot",
+            "Kirby",
+            "Donkey Kong",
+            "Yoshi",
+            "Luigi",
+            "Lara Croft",
+            "Zelda",
+            "Wii Sports",
+            "Among Us",
+            "Animal Crossing",
+            "Pokémon",
+            "Call of Duty",
+            "FIFA",
+            "NBA 2K",
+            "Just Dance",
+            "Subway Surfers",
+            "Halo",
+            "Plants vs Zombies",
+            "Roblox",
+            "Temple Run",
+            "GTA",
+            "Candy Crush",
+          ],
+          medium: [
+            "Skyrim",
+            "Overwatch",
+            "Valorant",
+            "Stardew Valley",
+            "Resident Evil",
+            "League of Legends",
+            "Final Fantasy",
+            "Apex Legends",
+            "Rocket League",
+            "Metal Gear",
+            "Dead by Daylight",
+            "Monster Hunter",
+            "Bayonetta",
+            "Persona 5",
+            "Hollow Knight",
+            "Splatoon",
+            "Fire Emblem",
+            "Nier Automata",
+            "The Sims",
+            "Terraria",
+            "Doom",
+            "Counter-Strike",
+            "Destiny",
+            "The Witcher",
+            "Fall Guys",
+            "Left 4 Dead",
+            "Mass Effect",
+            "Yakuza",
+            "No Man's Sky",
+            "It Takes Two",
+          ],
+          hard: [
+            "Katamari Damacy",
+            "Baldur’s Gate",
+            "Undertale",
+            "Xenoblade Chronicles",
+            "Return of the Obra Dinn",
+            "Hades",
+            "Disco Elysium",
+            "Celeste",
+            "Pathologic",
+            "Slay the Spire",
+            "Shin Megami Tensei",
+            "Alan Wake",
+            "Journey",
+            "Hyper Light Drifter",
+            "Okami",
+            "Gris",
+            "The Stanley Parable",
+            "Braid",
+            "Chrono Trigger",
+            "Fez",
+            "Inside",
+            "Papers, Please",
+            "Spiritfarer",
+            "Outer Wilds",
+            "Tunic",
+          ],
+        },
+      };
+
+      // Elements
+      const categoryContainer = document.getElementById("categoryButtons");
+      const difficultyContainer = document.getElementById("difficultyButtons");
+
+      // Audio elements
+      const timerSound = document.getElementById("timerSound");
+      const warningSound = document.getElementById("warningSound");
+      const buzzerSound = document.getElementById("buzzerSound");
+      const startSound = document.getElementById("startSound");
+
+      // State
+      let mode = null; // "timeTrial" or "groupPlay"
+      let chosenCategory = null;
+      let chosenDifficulty = null;
+
+      // Timer interval for time trial
+      let timerInterval = null;
+      let warningPlayed = false;
+      let startSoundTimeout = null;
+
+      // Color mappings for categories and difficulties
+      const categoryColors = {
+        animals: "#6ab04c",
+        foods: "#f9ca24",
+        countries: "#eb4d4b",
+        movies: "#686de0",
+        famousPeople: "#30336b",
+        tvshows: "#22a6b3",
+        fictionalCharacters: "#be2edd",
+      };
+
+      const difficultyColors = {
+        easy: "#27ae60", // green
+        medium: "#f39c12", // orange
+        hard: "#e74c3c", // red
+      };
+
+      // Populate categories buttons dynamically and color them
+      function populateCategories() {
+        categoryContainer.innerHTML = "";
+        Object.keys(categories).forEach((key) => {
+          const btn = document.createElement("button");
+          btn.className = "btn categoryBtn";
+          btn.textContent = key
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (s) => s.toUpperCase());
+          btn.dataset.category = key;
+          // Apply category color
+          btn.style.backgroundColor = categoryColors[key] || "#00b894";
+          btn.style.color = "white";
+          categoryContainer.appendChild(btn);
+        });
+      }
+      populateCategories();
+
+      // Apply colors to difficulty buttons
+      difficultyContainer.querySelectorAll(".difficultyBtn").forEach((btn) => {
+        const diff = btn.dataset.difficulty;
+        btn.style.backgroundColor = difficultyColors[diff] || "#00b894";
+        btn.style.color = "white";
+      });
+
+      // Show a screen by name
+      function showScreen(name) {
+        Object.values(screens).forEach((s) => s.classList.remove("active"));
+        screens[name].classList.add("active");
+      }
+
+      // Start Menu Buttons
+      document.getElementById("timeTrialBtn").addEventListener("click", () => {
+        mode = "timeTrial";
+        chosenCategory = null;
+        chosenDifficulty = null;
+        showScreen("category");
+      });
+
+      document.getElementById("groupPlayBtn").addEventListener("click", () => {
+        mode = "groupPlay";
+        chosenCategory = null;
+        chosenDifficulty = null;
+        showScreen("category");
+      });
+
+      // Category selection
+      categoryContainer.addEventListener("click", (e) => {
+        if (e.target.classList.contains("categoryBtn")) {
+          chosenCategory = e.target.dataset.category;
+          showScreen("difficulty");
+        }
+      });
+
+      // Difficulty selection
+      difficultyContainer.querySelectorAll(".difficultyBtn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          chosenDifficulty = btn.dataset.difficulty;
+          startBuffer();
+        });
+      });
+
+      // Buffer countdown (3 seconds) with optional callback after countdown
+      const bufferTimerElem = document.getElementById("bufferTimer");
+      function startBuffer(callback) {
+        showScreen("buffer");
+        let count = 3;
+        bufferTimerElem.textContent = count;
+
+        const interval = setInterval(() => {
+          count--;
+          bufferTimerElem.textContent = count;
+          if (count <= 0) {
+            clearInterval(interval);
+            if (typeof callback === "function") {
+              callback();
+            } else {
+              // Old logic, fallback for timeTrial and groupPlay
+              if (mode === "timeTrial") {
+                startTimeTrialGame();
+              } else if (mode === "groupPlay") {
+                startGroupPlayGame();
+              }
+            }
+          }
+        }, 1000);
+      }
+
+      // Time Trial Game Logic
+      const wordTextTimeTrial = document.getElementById("wordTextTimeTrial");
+      const gameTimerElem = document.getElementById("gameTimer");
+      const nextWordBtnTimeTrial = document.getElementById(
+        "nextWordBtnTimeTrial"
+      );
+      const playAgainBtnTimeTrial = document.getElementById(
+        "playAgainBtnTimeTrial"
+      );
+
+      function startTimeTrialGame() {
+        showScreen("wordTimeTrial");
+        pickRandomWordTimeTrial();
+
+        // Play start sound for 2 seconds max
+        startSound.currentTime = 0;
+        startSound.play();
+        if (startSoundTimeout) clearTimeout(startSoundTimeout);
+        startSoundTimeout = setTimeout(() => {
+          startSound.pause();
+        }, 2000);
+
+        let timeLeft = 60;
+        warningPlayed = false;
+        gameTimerElem.textContent = timeLeft;
+        timerSound.currentTime = 0;
+        timerSound.play();
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          gameTimerElem.textContent = timeLeft;
+
+          if (timeLeft === 10 && !warningPlayed) {
+            warningPlayed = true;
+            warningSound.play();
+            // Play warning sound twice
+            warningSound.onended = () => {
+              warningSound.onended = null;
+              warningSound.play();
+            };
+          }
+
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timerSound.pause();
+            buzzerSound.play();
+          }
+        }, 1000);
+      }
+
+      function pickRandomWordTimeTrial() {
+        const words = categories[chosenCategory][chosenDifficulty];
+        const word = words[Math.floor(Math.random() * words.length)];
+        wordTextTimeTrial.textContent = word;
+      }
+
+      nextWordBtnTimeTrial.addEventListener("click", () => {
+        if (timerInterval) clearInterval(timerInterval);
+        timerSound.pause();
+        buzzerSound.pause();
+        startBuffer();
+      });
+
+      playAgainBtnTimeTrial.addEventListener("click", () => {
+        if (timerInterval) clearInterval(timerInterval);
+        timerSound.pause();
+        buzzerSound.pause();
+        if (startSoundTimeout) clearTimeout(startSoundTimeout);
+        startSound.pause();
+        showScreen("start");
+      });
+
+      // Group Play Logic (no timer, no sound)
+      nextWordBtnGroupPlay.addEventListener("click", () => {
+        startBuffer(() => {
+          startGroupPlayGame();
+        });
+      });
+
+      const playAgainBtnGroupPlay = document.getElementById(
+        "playAgainBtnGroupPlay"
+      );
+
+      function startGroupPlayGame() {
+        showScreen("wordGroupPlay");
+        pickRandomWordGroupPlay();
+      }
+
+      function pickRandomWordGroupPlay() {
+        const words = categories[chosenCategory][chosenDifficulty];
+        const word = words[Math.floor(Math.random() * words.length)];
+        wordTextGroupPlay.textContent = word;
+      }
+
+      nextWordBtnGroupPlay.addEventListener("click", () => {
+        pickRandomWordGroupPlay();
+      });
+
+      playAgainBtnGroupPlay.addEventListener("click", () => {
+        showScreen("start");
+      });
+    </script>
+  </body>
+</html>
