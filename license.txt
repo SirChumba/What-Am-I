@@ -1,9 +1,0 @@
-Copyright (c) 2025 Gabriel Valdez (GitHub: SirChumba)
-
-All rights reserved.
-
-This software ("What Am I") and its associated files are the exclusive intellectual property of Gabriel Valdez.
-
-You are not permitted to copy, distribute, modify, sublicense, or use any part of this software or its assets (including code, images, sounds, or prompts) for any purpose, commercial or non-commercial, without explicit written permission from the author.
-
-Unauthorized use, reproduction, or redistribution of this software is strictly prohibited and may be subject to legal action.
